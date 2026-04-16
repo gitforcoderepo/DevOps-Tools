@@ -1,0 +1,225 @@
+
+🚀 Step 0: Prerequisites
+You need:
+EKS cluster running
+kubectl configured
+Access to cluster
+Check:
+kubectl get nodes
+If you see nodes → good to go ✅
+
+🔧 Step 1: Install EBS CSI Driver (IMPORTANT)
+Without this, PVC will NOT work.
+Run:
+aws eks create-addon \
+ --cluster-name <your-cluster-name> \
+ --addon-name aws-ebs-csi-driver
+Verify:
+kubectl get pods -n kube-system | grep ebs
+You should see running pods.
+
+📦 Step 2: Create StorageClass
+This tells Kubernetes: “use AWS EBS gp3 disk”.
+Create a file:
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+ name: gp3
+provisioner: ebs.csi.aws.com
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+ type: gp3
+Apply it:
+kubectl apply -f storageclass.yaml
+Check:
+kubectl get sc
+
+📄 Step 3: Create PVC (your storage request)
+Create file:
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+ name: my-pvc
+spec:
+ accessModes:
+   - ReadWriteOnce
+ storageClassName: gp3
+ resources:
+   requests:
+     storage: 5Gi
+Apply:
+kubectl apply -f pvc.yaml
+Check:
+kubectl get pvc
+👉 At this point, it may show:
+STATUS: Pending
+That’s normal (don’t panic)
+
+🚀 Step 4: Create Pod that uses PVC
+Now we attach storage to a pod.
+apiVersion: v1
+kind: Pod
+metadata:
+ name: my-app
+spec:
+ containers:
+ - name: nginx
+   image: nginx
+   volumeMounts:
+   - mountPath: "/data"
+     name: my-storage
+ volumes:
+ - name: my-storage
+   persistentVolumeClaim:
+     claimName: my-pvc
+Apply:
+kubectl apply -f pod.yaml
+
+✅ Step 5: Verify everything
+Check pod:
+kubectl get pods
+Check PVC:
+kubectl get pvc
+Now it should say:
+STATUS: Bound
+🎉 That means:
+PVC created
+EBS volume created
+Pod attached to disk
+
+🔍 Step 6: Test storage
+Enter pod:
+kubectl exec -it my-app -- /bin/bash
+Write file:
+echo "hello from EKS" > /data/test.txt
+cat /data/test.txt
+If it works → storage is working ✅
+
+⚠️ Common beginner mistakes (very important)
+❌ PVC stuck in Pending forever
+CSI driver not installed
+Wrong StorageClass name
+
+❌ Pod stuck in Pending
+Node/AZ mismatch
+Not enough resources
+
+❌ Volume not shared
+EBS supports only:
+
+ ReadWriteOnce
+
+
+If you need multiple pods → use Amazon EFS
+
+
+Great—let’s level this up in a way that actually sticks. I’ll show you:
+How to clean up everything safely
+How to use shared storage (EFS)
+A clear mental diagram so you understand what’s happening under the hood
+
+🧹 1. Delete Everything (Clean Up)
+When you’re done testing, delete in this order:
+kubectl delete pod my-app
+kubectl delete pvc my-pvc
+kubectl delete sc gp3
+⚠️ Important:
+Deleting PVC → deletes the EBS volume automatically (if reclaim policy = Delete)
+If not → you may need to manually delete from AWS console
+Storage comes from Amazon EBS, so always clean up to avoid charges.
+
+📂 2. Shared Storage (Multiple Pods) using EFS
+EBS = one pod at a time
+ EFS = many pods at the same time
+We use Amazon EFS
+
+🔧 Step 1: Create EFS in AWS
+In AWS Console:
+Go to EFS
+Create file system
+Select same VPC as EKS
+
+🔧 Step 2: Install EFS CSI Driver
+helm repo add aws-efs-csi-driver https://kubernetes-sigs.github.io/aws-efs-csi-driver
+helm install aws-efs-csi-driver aws-efs-csi-driver/aws-efs-csi-driver \
+ -n kube-system
+
+📦 Step 3: Create StorageClass (EFS)
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+ name: efs-sc
+provisioner: efs.csi.aws.com
+Apply:
+kubectl apply -f efs-sc.yaml
+
+📄 Step 4: Create PVC (EFS)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+ name: efs-pvc
+spec:
+ accessModes:
+   - ReadWriteMany   # 👈 important
+ storageClassName: efs-sc
+ resources:
+   requests:
+     storage: 5Gi
+
+🚀 Step 5: Use in Multiple Pods
+You can attach same PVC to multiple pods:
+volumeMounts:
+ - mountPath: "/shared"
+   name: shared-storage
+Now all pods share same files 🎉
+
+🧠 3. Architecture (Simple Visualization)
+Here’s what actually happens:
+[ Pod ]
+  ↓
+[ PVC ]  ← your request (5Gi)
+  ↓
+[ StorageClass ]
+  ↓
+[ CSI Driver ]
+  ↓
+[ AWS Storage ]
+  → EBS (single pod)
+  → EFS (multiple pods)
+
+🔥 Real-World Tips (this is what people miss)
+✅ Always use:
+volumeBindingMode: WaitForFirstConsumer
+Prevents AZ issues in EKS
+
+✅ Use EBS for:
+Databases (MySQL, PostgreSQL)
+Single pod apps
+
+✅ Use EFS for:
+Shared logs
+Multiple replicas
+Microservices sharing data
+
+❌ Avoid this mistake:
+Trying:
+ReadWriteMany with EBS
+👉 Won’t work
+
+🧪 Mini Practice (do this once)
+Try this flow:
+Create PVC (EBS)
+Attach to pod
+Write file
+Delete pod
+Recreate pod
+Check file still exists
+👉 That’s when it “clicks”
+
+👉 If you want next (highly useful)
+I can guide you through:
+🐞 Debugging real errors (just paste your output)
+🧱 Using PVC with Deployments (important for real apps)
+📊 Interview questions on EKS storage
+🔐 IAM roles for CSI drivers (very important in companies)
+Just tell me what you want 👍
