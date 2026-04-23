@@ -126,7 +126,7 @@ python3 --version
 ## First Python Script
 
 ```python
-#!/usr/bin/env python3
+#!/usr/bin/python3
 
 # Comment section
 
