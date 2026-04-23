@@ -143,22 +143,5 @@ var1 = 10
 print(var1)
 ```
 
----
 
-## Summary
-
-* Python is both a **programming** and **scripting** language
-* Use `#` for single-line comments
-* Use `""" """` for multi-line descriptions/docstrings
-* Always prefer **Python 3**
-* Use `#!/usr/bin/env python3` for better portability
-
-```
-
----
-
-If you want, I can next:
-- Add **GitHub badges & styling**
-- Convert this into a **README.md with sections + TOC**
-- Or make it look like **professional DevOps documentation**
 ```
