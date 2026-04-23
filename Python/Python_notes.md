@@ -1,5 +1,3 @@
-Here’s your cleaned-up content converted into a **proper `.md (Markdown)` file format**. You can copy-paste this directly into a file like `python_notes.md` and upload it to GitHub.
-
 ---
 
 ````markdown
