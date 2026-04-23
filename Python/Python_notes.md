@@ -1,5 +1,3 @@
----
-
 ````markdown
 # Python Scripting Notes
 
