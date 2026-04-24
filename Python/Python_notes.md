@@ -2,7 +2,7 @@
 # Python Scripting Notes
 
 **Instructor:** Sandeep  
-**Email:** omtech@gmail.com  
+**Email:** sandeepdoddamani7@gmail.com  
 **Date:** 23 April 2026  
 
 ---
