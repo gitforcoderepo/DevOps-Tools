@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Taskly – Your Daily Planner</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f0f13;
+      --surface: #1a1a24;
+      --border: #2e2e42;
+      --accent: #7c6af7;
+      --accent2: #f7a76a;
+      --text: #e8e8f0;
+      --muted: #888899;
+      --done: #4caf80;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      background-image: radial-gradient(ellipse at 20% 20%, #7c6af720 0%, transparent 60%),
+                        radial-gradient(ellipse at 80% 80%, #f7a76a15 0%, transparent 60%);
+    }
+
+    .container { width: 100%; max-width: 560px; }
+
+    header { margin-bottom: 2.5rem; }
+
+    header h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2.8rem;
+      line-height: 1.1;
+      background: linear-gradient(135deg, var(--text) 40%, var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    header p { color: var(--muted); margin-top: .4rem; font-size: .95rem; }
+
+    .stats {
+      display: flex; gap: 1rem; margin-bottom: 2rem;
+    }
+    .stat {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: .8rem 1.2rem;
+      flex: 1;
+      text-align: center;
+    }
+    .stat .num { font-size: 1.6rem; font-weight: 600; color: var(--accent); }
+    .stat .label { font-size: .75rem; color: var(--muted); margin-top: .2rem; }
+
+    .input-row {
+      display: flex;
+      gap: .75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .input-row input {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: .9rem 1.2rem;
+      color: var(--text);
+      font-family: inherit;
+      font-size: .95rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .input-row input:focus { border-color: var(--accent); }
+    .input-row input::placeholder { color: var(--muted); }
+
+    .btn-add {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: .9rem 1.4rem;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: opacity .2s, transform .1s;
+    }
+    .btn-add:hover { opacity: .88; transform: scale(1.04); }
+
+    .filters {
+      display: flex; gap: .5rem; margin-bottom: 1.2rem;
+    }
+    .filter-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 8px;
+      padding: .4rem .9rem;
+      font-family: inherit;
+      font-size: .8rem;
+      cursor: pointer;
+      transition: all .2s;
+    }
+    .filter-btn.active, .filter-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .task-list { display: flex; flex-direction: column; gap: .75rem; }
+
+    .task {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      animation: slideIn .25s ease;
+      transition: border-color .2s;
+    }
+    .task:hover { border-color: var(--accent); }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .task.done .task-text { text-decoration: line-through; color: var(--muted); }
+
+    .checkbox {
+      width: 22px; height: 22px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s;
+    }
+    .task.done .checkbox {
+      background: var(--done);
+      border-color: var(--done);
+    }
+    .checkbox svg { display: none; }
+    .task.done .checkbox svg { display: block; }
+
+    .task-text { flex: 1; font-size: .95rem; }
+
+    .task-tag {
+      background: var(--accent)22;
+      color: var(--accent);
+      font-size: .72rem;
+      padding: .2rem .6rem;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+
+    .del-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 1.1rem;
+      padding: .2rem;
+      transition: color .2s;
+    }
+    .del-btn:hover { color: #f06a6a; }
+
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 3rem 1rem;
+      font-size: .95rem;
+    }
+    .empty span { font-size: 2.5rem; display: block; margin-bottom: .8rem; }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: .75rem;
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Taskly</h1>
+    <p>Your smart daily planner — stay focused & get things done.</p>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><div class="num" id="total">0</div><div class="label">Total</div></div>
+    <div class="stat"><div class="num" id="done-count" style="color:var(--done)">0</div><div class="label">Completed</div></div>
+    <div class="stat"><div class="num" id="pending" style="color:var(--accent2)">0</div><div class="label">Pending</div></div>
+  </div>
+
+  <div class="input-row">
+    <input id="taskInput" type="text" placeholder="Add a new task…" />
+    <button class="btn-add" onclick="addTask()">＋</button>
+  </div>
+
+  <div class="filters">
+    <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
+    <button class="filter-btn" onclick="setFilter('pending', this)">Pending</button>
+    <button class="filter-btn" onclick="setFilter('done', this)">Completed</button>
+  </div>
+
+  <div class="task-list" id="taskList"></div>
+  <footer>Built with Docker 🐳 | Taskly v1.0</footer>
+</div>
+
+<script>
+  const tags = ['Work','Personal','Urgent','Learning','Health'];
+  let tasks = [
+    { id:1, text:'Set up Docker environment', done:true, tag:'Work' },
+    { id:2, text:'Learn about containers vs VMs', done:false, tag:'Learning' },
+    { id:3, text:'Write a Dockerfile for this app', done:false, tag:'Work' },
+    { id:4, text:'Push image to Docker Hub', done:false, tag:'Urgent' },
+  ];
+  let filter = 'all';
+  let nextId = 5;
+
+  function addTask() {
+    const input = document.getElementById('taskInput');
+    const text = input.value.trim();
+    if (!text) return;
+    tasks.unshift({ id: nextId++, text, done: false, tag: tags[Math.floor(Math.random()*tags.length)] });
+    input.value = '';
+    render();
+  }
+
+  document.getElementById('taskInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addTask();
+  });
+
+  function toggle(id) {
+    tasks = tasks.map(t => t.id === id ? {...t, done: !t.done} : t);
+    render();
+  }
+
+  function del(id) {
+    tasks = tasks.filter(t => t.id !== id);
+    render();
+  }
+
+  function setFilter(f, btn) {
+    filter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+  }
+
+  function render() {
+    const list = document.getElementById('taskList');
+    const visible = tasks.filter(t =>
+      filter === 'all' ? true : filter === 'done' ? t.done : !t.done
+    );
+
+    document.getElementById('total').textContent = tasks.length;
+    document.getElementById('done-count').textContent = tasks.filter(t=>t.done).length;
+    document.getElementById('pending').textContent = tasks.filter(t=>!t.done).length;
+
+    if (!visible.length) {
+      list.innerHTML = '<div class="empty"><span>✅</span>Nothing here — add a task above!</div>';
+      return;
+    }
+
+    list.innerHTML = visible.map(t => `
+      <div class="task ${t.done ? 'done' : ''}">
+        <div class="checkbox" onclick="toggle(${t.id})">
+          <svg width="13" height="10" viewBox="0 0 13 10" fill="none">
+            <path d="M1 5l4 4 7-8" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span class="task-text">${t.text}</span>
+        <span class="task-tag">${t.tag}</span>
+        <button class="del-btn" onclick="del(${t.id})">✕</button>
+      </div>
+    `).join('');
+  }
+
+  render();
+</script>
+</body>
+</html>

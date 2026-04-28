@@ -1,0 +1,31 @@
+# ─────────────────────────────────────────────
+#  PROJECT 1 — Taskly Todo App
+#  A beautiful dark-themed task manager
+#
+#  CONCEPTS TAUGHT:
+#    • Base image selection (nginx:alpine)
+#    • COPY instruction
+#    • EXPOSE instruction
+#    • Serving static files with Nginx
+#
+#  BUILD:  docker build -t taskly .
+#  RUN:    docker run -d -p 8080:80 --name taskly taskly
+#  OPEN:   http://localhost:8080
+# ─────────────────────────────────────────────
+
+# Step 1: Use a lightweight web server image
+FROM nginx:alpine
+
+# Step 2: Set a label (good practice — metadata)
+LABEL maintainer="your-name@email.com"
+LABEL version="1.0"
+LABEL description="Taskly - A beautiful Todo App served with Nginx"
+
+# Step 3: Copy our HTML app into Nginx's web root
+COPY index.html /usr/share/nginx/html/index.html
+
+# Step 4: Tell Docker this container listens on port 80
+EXPOSE 80
+
+# Step 5: Nginx starts automatically — no CMD needed
+#         (the base image already defines it)
